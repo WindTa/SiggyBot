@@ -1,13 +1,45 @@
-const Discord = require('discord.js');
+// Load required libraries
+const Discord = require("discord.js");
+const mysql = require("mysql");
+const ytdl = require("ytdl-core");
 
+// Load data to run bot and database
+const { token, 
+        prefix, 
+        host, 
+        user, 
+        password, 
+        database
+} = require("./config.json");
+
+// Start up discord client
 const client = new Discord.Client();
-const { token, prefix } = require("./config.json");
+
+// Connect to database
+var con = mysql.createConnection({host, user, password, database});
+con.connect(err => {
+    if (err) console.error(err);
+    console.log("Connected to database!");
+})
+
+// Log into client
+client.login(token);
 
 // Function to pull ID of a YouTube video
-function youtube_parser(url){
-    var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+function youtubeParser(url){
+    var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*)?(\?t=)?(\d*)/;
     var match = url.match(regExp);
-    return (match&&match[1].length==11)? match[1] : false;
+    return [match&&match[1].length==11 ? match[1] : null, match&&match[3].length!=0 ? match[3] : null];
+}
+
+// Function to check if argument is an Int object
+function durationValue(duration) {
+    if (duration === undefined) {
+        return null;
+    }
+    var regExp = /(\d*)/;
+    var match = duration.match(regExp);
+    return match&&match[0].length!=0 ? match[0] : null;
 }
 
 client.on("ready", () => {
@@ -20,29 +52,38 @@ client.on("message", (message) => {
         return;
     }
 
-    let splitMessage;
-    if (message.content.startsWith(prefix + "help")) {
-        // Prints commands to Discord channel
-        message.channel.send("\tSiggy is trying to display the list of commands");
-        return;
-    } else {
-        // Notifies user of invalid command due to arguments
-        splitMessage = message.content.split(" ");
-        if (splitMessage.length < 2) {
-            message.channel.send("\tSiggy is not receiving enough arguments for the command. Type ?help for more details.");
-            return;
-        }
-    }
+    let args = message.content.substring(prefix.length).split(" ");
+    switch(args[0]) {
+        case 'help':
+            message.channel.send("Sending help message");
+        break;
 
-    if (message.content.startsWith(prefix + "intro")) {
-        // Updates the messenger's intro song.
-        message.channel.send("\tSiggy updated " + message.author.username + "'s intro to " + message.channel.name)
-    }
-
-    if (message.content.startsWith(prefix + "outro")) {
-        // Updates the messenger's outro song.
-        message.channel.send("\tSiggy updated " + message.author.username + "'s outro to " + message.channel.name)
+        case 'intro':
+            // Checks to see if second argument is a YouTube link
+            [parsedYTID, parsedTime]  = youtubeParser(args[1]);
+            if (!parsedYTID) {
+                message.channel.send("You need to provide a YouTube link!");
+                return;
+            }
+            
+            // Update database
+            con.query(`SELECT * FROM intro where id = '${message.author.id}'`, (err, rows) => {
+                if (err) console.error(err);
+                
+                let sql; 
+                if (rows.length < 1) {
+                    sql = `INSERT INTO intro (id, yt, start, duration) VALUES('${message.author.id}', '${parsedYTID}', ${parsedTime}, ${durationValue(args[2])})`;
+                } else {
+                    let yt = rows[0].yt;
+                    sql = `UPDATE intro SET 
+                        yt = '${parsedYTID}', 
+                        start = ${parsedTime}, 
+                        duration = ${durationValue(args[2])} 
+                        WHERE id = '${message.author.id}'`;
+                }
+                con.query(sql, console.log);
+            });
+            // Display user's intro
+        break;
     }
 });
-
-client.login(token);
