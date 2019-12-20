@@ -1,0 +1,23 @@
+{
+  "name": "siggybot",
+  "version": "1.0.0",
+  "description": "Allow a Discord bot to link Discord ID's to YouTube links and play whenever they join a voice channel.",
+  "main": "index.js",
+  "dependencies": {
+    "discord.js": "^11.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WindTa/SiggyBot.git"
+  },
+  "author": "WindTa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WindTa/SiggyBot/issues"
+  },
+  "homepage": "https://github.com/WindTa/SiggyBot#readme"
+}
