@@ -4,7 +4,10 @@
   "description": "Allow a Discord bot to link Discord ID's to YouTube links and play whenever they join a voice channel.",
   "main": "index.js",
   "dependencies": {
-    "discord.js": "^11.5.1"
+    "discord.js": "^11.5.1",
+    "mysql": "^2.17.1",
+    "opusscript": "0.0.7",
+    "ytdl-core": "^1.0.3"
   },
   "devDependencies": {},
   "scripts": {
