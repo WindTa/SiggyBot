@@ -1,6 +1,7 @@
 // Load required libraries
 const Discord = require("discord.js");
 const exec = require("child_process").exec;
+const fs = require("fs");
 
 // Load data to run bot and database
 const { token, 
@@ -133,7 +134,17 @@ function play(newMember, table) {
         VoiceChannel.join()
         .then(connection => {
             console.log("\t\tBot joined the channel.");
-            const dispatcher = connection.playFile("intro/" + newMember.id + ".mp3");
+            var id = '';
+            if (fs.existsSync("intro/" + newMember.id + ".mp3")) {
+                id = newMember.id;
+            } else {
+                id = "default";
+            }
+            const dispatcher = connection.playFile("intro/" + id + ".mp3");
+            dispatcher.on('start', () => {
+                connection.player.streamingData.pausedTime = 0;
+            });
+            //const dispatcher = connection.playFile("intro/" + newMember.id + ".mp3");
             //const dispatcher = connection.playFile("intro/" + newMember.id + ".mp3");
         })
         .catch(console.error)
