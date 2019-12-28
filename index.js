@@ -12,7 +12,22 @@ const { token,
         database
 } = require("./config.json");
 
-
+// Embedded Help Message
+const helpEmbed = new Discord.RichEmbed()
+    .setColor("#000000")
+    .setTitle("Help Manual for SiggyBot")
+    .setDescription("SiggyBot will play your signature song")
+    .setThumbnail("https://scontent-lax3-2.xx.fbcdn.net/v/t1.15752-9/82016613_1518447688294795_5932471724183388160_n.png?_nc_cat=107&_nc_ohc=LRbLCYFiQ4kAQmJc2u5KUUeuHngn24i7B_ARkuZ1fY6QC84VmkQhFB60A&_nc_ht=scontent-lax3-2.xx&oh=a53ca8c67cc689a3508fc94015525047&oe=5EA226F4")
+    .addBlankField()
+    .addField("?help", "Show this message.")
+    .addField("?intro YouTubeURL", "ie. ?intro https://youtu.be/wWTgNQN1r0s\nClips 0:00-0:05.")
+    .addField("?intro YouTubeURL duration", "ie. ?intro https://youtu.be/wWTgNQN1r0s?t=6 10 \nClips 0:06-0:16.")
+const downloadEmbed = new Discord.RichEmbed()
+    .setColor("#FF0000")
+    .setTitle("Downloading...");
+const completeEmbed = new Discord.RichEmbed()
+    .setColor("#00FF00")
+    .setTitle("Download Complete.");
 
 // Start up discord client
 const client = new Discord.Client();
@@ -45,7 +60,7 @@ function durationValue(duration) {
 }
 
 // Function to grab section of YouTube MP3, uses command line code
-function mp3Cutter(ytid, id, startSeconds, durationSeconds) {
+function mp3Cutter(ytid, id, startSeconds, durationSeconds, channel) {
     if (durationSeconds == 0) {
         durationSeconds = 5;
     }
@@ -53,19 +68,19 @@ function mp3Cutter(ytid, id, startSeconds, durationSeconds) {
     startFormat = new Date(startSeconds*1000).toISOString().substr(11, 8);
     endFormat = new Date((startSeconds + durationSeconds)*1000).toISOString().substr(11, 8);
 
-    console.log("\tDownloading...");
-    const child1 = exec("youtube-dl -g " + ytid, function(err, result) {
-        if (err) return console.log(err);
-        console.log("\t\tGrabbed URL");
-        var url = result.split("\n")[1];
-        const child2 = exec("ffmpeg -i " + '"'+url+'"' + " -ss " + startFormat + " -to " + endFormat + " intro/" + id + ".mp3", function(err, result) {
+    channel.send(downloadEmbed).then((msg) => {
+        const child1 = exec("youtube-dl -g -- " + ytid, function(err, result) {
             if (err) return console.log(err);
-            console.log("\t\tDownload Complete");
+            var url = result.split("\n")[1];
+            const child2 = exec("ffmpeg -i " + '"'+url+'"' + " -ss " + startFormat + " -to " + endFormat + " intro/" + id + ".mp3", function(err, result) {
+                if (err) return console.log(err);
+                msg.edit(completeEmbed);
+            });
+    
+            child2.stdin.write("Y");
+            child2.stdin.end();
         });
-
-        child2.stdin.write("Y");
-        child2.stdin.end();
-    });
+    })
 }
 
 
@@ -84,8 +99,9 @@ client.on("message", (message) => {
 
     let args = message.content.substring(prefix.length).split(" ");
     switch(args[0]) {
+        case 'h': //Fall through
         case 'help':
-            message.channel.send("Sending help message");
+            message.channel.send(helpEmbed);
         break;
 
         case 'intro':
@@ -94,11 +110,12 @@ client.on("message", (message) => {
             
             if (!parsedYTID) {
                 message.channel.send("You need to provide a YouTube link!");
+                message.channel.send(helpEmbed);
                 return;
             }
             
             duration = durationValue(args[2]);
-            mp3Cutter(parsedYTID, message.author.id, +parsedTime, +duration);
+            mp3Cutter(parsedYTID, message.author.id, +parsedTime, +duration, message.channel);
         break;
     }
 });
