@@ -25,6 +25,9 @@ const helpEmbed = new Discord.RichEmbed()
 const downloadEmbed = new Discord.RichEmbed()
     .setColor("#FF0000")
     .setTitle("Downloading...");
+const errorEmbed = new Discord.RichEmbed()
+    .setColor("#FF0000")
+    .setTitle("Download failed. Try again. If problem persists, message WindTa#3455.")
 const completeEmbed = new Discord.RichEmbed()
     .setColor("#00FF00")
     .setTitle("Download Complete.");
@@ -70,10 +73,16 @@ function mp3Cutter(ytid, id, startSeconds, durationSeconds, channel) {
 
     channel.send(downloadEmbed).then((msg) => {
         const child1 = exec("youtube-dl -g -- " + ytid, function(err, result) {
-            if (err) return console.log(err);
+            if (err) {
+                msg.edit(errorEmbed);
+                return console.log(err);
+            }
             var url = result.split("\n")[1];
             const child2 = exec("ffmpeg -i " + '"'+url+'"' + " -ss " + startFormat + " -to " + endFormat + " intro/" + id + ".mp3", function(err, result) {
-                if (err) return console.log(err);
+                if (err) {
+                    msg.edit(errorEmbed);
+                    return console.log(err);
+                } 
                 msg.edit(completeEmbed);
             });
     
