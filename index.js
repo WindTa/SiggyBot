@@ -160,12 +160,17 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
         return;
     }
 
-    if (newMember.voiceChannel) {
+    let newUserChannel = newMember.voiceChannel;
+    let oldUserChannel = oldMember.voiceChannel;
+
+    if (!oldUserChannel && newUserChannel) {
         // User joins a channel
         join(newMember);
-    } else {
+    } else if (!newUserChannel) {
         // User leaves a channel
         leave(oldMember);     
+    } else if (oldUserChannel && newUserChannel && oldUserChannel.id != newUserChannel.id) {
+        // User switches channels
+        join(newMember);
     }
 });
-
