@@ -3,16 +3,12 @@ const Discord = require("discord.js");
 const exec = require("child_process").exec;
 const fs = require("fs");
 
-// Load data to run bot and database
+// Load data to run bot
 const { token, 
-        prefix, 
-        host, 
-        user, 
-        password, 
-        database
+        prefix
 } = require("./config.json");
 
-// Embedded Help Message
+// Embedded Messages
 const helpEmbed = new Discord.RichEmbed()
     .setColor("#000000")
     .setTitle("Help Manual for SiggyBot")
@@ -30,23 +26,21 @@ const errorEmbed = new Discord.RichEmbed()
     .setTitle("Download failed. Try again. If problem persists, message WindTa#3455.")
 const completeEmbed = new Discord.RichEmbed()
     .setColor("#00FF00")
-    .setTitle("Download Complete.");
+    .setTitle("Download Complete. Your clip will play when you join a Voice Channel.");
 
-// Start up discord client
+// Start up and log into Discord bot client
 const client = new Discord.Client();
 
-// Set up connections for streaming YouTube
-const streamOptions = { seek: 0, volume: 1 };
-var queue = [];
-
-// Log into client
 client.login(token);
 
 // Function to pull ID of a YouTube video
 function youtubeParser(url){
+    // Returns false if there is no URL
     if (url === undefined) {
         return [false, null];
     }
+
+    // Returns two arguments: YouTube video ID, YouTube video timestamp (if provided)
     var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*)?(\?t=)?(\d*)/;
     var match = url.match(regExp);
     return [match&&match[1].length==11 ? match[1] : null, match&&match[3].length!=0 ? match[3] : null];
@@ -54,9 +48,12 @@ function youtubeParser(url){
 
 // Function to check if argument is an Int object
 function durationValue(duration) {
+    // Returns false if there is no argument
     if (duration === undefined) {
         return null;
     }
+
+    // Returns duration
     var regExp = /(\d*)/;
     var match = duration.match(regExp);
     return match&&match[0].length!=0 ? match[0] : null;
@@ -92,7 +89,34 @@ function mp3Cutter(ytid, id, startSeconds, durationSeconds, channel) {
     })
 }
 
+// Function to play intro theme when user joins.
+function join(member) {
+    let VoiceChannel = member.voiceChannel;
 
+    VoiceChannel.join()
+    .then(connection => {
+        console.log("\t" + member.user.username + " joined " + VoiceChannel.name);
+        var id = '';
+        if (fs.existsSync("intro/" + member.id + ".mp3")) {
+            id = member.id;
+        } else {
+            id = "default";
+        }
+        
+        const dispatcher = connection.playFile("intro/" + id + ".mp3");
+        dispatcher.on('start', () => {
+            connection.player.streamingData.pausedTime = 0;
+        });
+    })
+    .catch(console.error)
+}
+
+// Function to notify when user leaves.
+function leave(member) {
+    let VoiceChannel = member.voiceChannel;
+
+    console.log("\t" + member.user.username + " left " + VoiceChannel.name);
+}
 
 // Displays to console when Siggy is ready to go
 client.on("ready", () => {
@@ -131,48 +155,17 @@ client.on("message", (message) => {
 
 // Commands for when a person joins, leaves, or moves channels.
 client.on('voiceStateUpdate', (oldMember, newMember) => {
+    // Checks if user is a bot
     if (oldMember.user.bot || newMember.user.bot) {
         return;
     }
 
-    let newUserChannel = newMember.voiceChannel;
-    let oldUserChannel = oldMember.voiceChannel;
-
-    if (oldUserChannel === undefined && newUserChannel !== undefined) {
+    if (newMember.voiceChannel) {
         // User joins a channel
-        console.log("\t" + newMember.user.username + " joined " + newUserChannel.name);
-        play(newMember, "intro");
-    } else if (newUserChannel === undefined) {
+        join(newMember);
+    } else {
         // User leaves a channel
-        console.log("\t" + oldMember.user.username + " left " + oldUserChannel.name);
-        //play(newMember, "outro");
-    } else if (oldUserChannel && newUserChannel && oldUserChannel.id != newUserChannel.id) {
-        // User moved channels
-        console.log("\t" + newMember.user.username + " moved from " + oldUserChannel.name + " to " + newUserChannel.name);
-        play(newMember, "intro");
+        leave(oldMember);     
     }
 });
 
-function play(newMember, table) {
-    let VoiceChannel = newMember.guild.channels.find(channel => channel.id === newMember.voiceChannel.id);
-    if (VoiceChannel != null) {
-        console.log("\t\t" + VoiceChannel.name + " was found and is a " + VoiceChannel.type + " channel.");
-        VoiceChannel.join()
-        .then(connection => {
-            console.log("\t\tBot joined the channel.");
-            var id = '';
-            if (fs.existsSync("intro/" + newMember.id + ".mp3")) {
-                id = newMember.id;
-            } else {
-                id = "default";
-            }
-            const dispatcher = connection.playFile("intro/" + id + ".mp3");
-            dispatcher.on('start', () => {
-                connection.player.streamingData.pausedTime = 0;
-            });
-            //const dispatcher = connection.playFile("intro/" + newMember.id + ".mp3");
-            //const dispatcher = connection.playFile("intro/" + newMember.id + ".mp3");
-        })
-        .catch(console.error)
-    }
-}
