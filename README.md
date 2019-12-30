@@ -4,6 +4,8 @@ Allow Siggy bot to link Discord ID's to YouTube links and play whenever they joi
 
 ## Steps to run. 
 
+**NOTE: Currently only runs when WindTa is online. Currently working on hosting somewhere other my computer.** 
+
 1. Click the following link:
    <https://discordapi.com/permissions.html#3165184>
 2. Under **OAuth URL Generator** for the field **Client ID**, copy and paste `657028082468782101`.
