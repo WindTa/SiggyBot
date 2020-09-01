@@ -28,7 +28,13 @@ ___
 
 1. Type `node -v` in **CMD Prompt** to confirm installation
 
-### FFMPEG
+### youtube-dl and ffmpeg for raspberry pi
+
+1. To download youtube-dl: `sudo wget https://yt-dl.org/downloads/latest/youtube-dl -O /usr/local/bin/youtube-dl`
+2. To set permission:  `sudo chmod a+rx /usr/local/bin/youtube-dl`
+3. To download ffmpeg: `apt-get install ffmpeg`
+
+### FFMPEG for windows
 
 <https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-20191217-bd83191-win64-static.zip>
 
