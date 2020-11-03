@@ -1,11 +1,104 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>SiggyBot</title>
-    </head>
-    <body>
-        <div>SiggyBot</div>
-        <div>SiggyBot is a Discord bot that can play a custom signature audio clip when you join a voice channel.</div>
-    </body>
+    
+<head>
+    <meta charset="UTF-8">
+    <title>SiggyBot</title>
+</head>
+    
+<body>
+    <h1 class="primary">SiggyBot</h1>
+    <div>SiggyBot is a Discord bot that will play a custom audio signature when you join a voice channel. </div>
+
+    <hr>
+
+    <!-- Need for your server? -->
+    <div class="accordion">
+        <button type="button" class="accordion_button">Need for your server?</button>
+        <div class="accordion_content">
+            <ol>
+                <li>Click the following link: </li>
+                <a href="https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184">https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184</a>
+                <li>Sign into your Discord account and select your server</li>
+                <li>SiggyBot will now be a part of your server</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Need an audio signature? -->
+    <div class="accordion">
+        <button type="button" class="accordion_button">Need an audio signature?</button>
+        <div class="accordion_content">
+            <ol>
+                <li>Find a YouTube video</li>
+                <li>Pause where you want your audio signature to start</li> 
+                <li><mark>youtubeLink</mark>: right-click video, then select <b>Copy video URL at current time</b></li>
+                <li><mark>duration</mark>: decide how long you want your audio signature to be in seconds</li>
+                <li>In your discord server, enter <mark>youtubeLink</mark> and <mark>duration</mark> into the following command:
+                <div><b>?intro youtubeLink duration</b></div>
+                <br>
+                <img src="intro.gif" style="width: 100%; height: 100%;">
+            </ol>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    document.querySelectorAll('.accordion_button').forEach(button => {
+        button.addEventListener('click', () => {
+            button.classList.toggle('accordion_button-active');
+        });
+    });
+</script>
+
+<!-- Styling -->
+<style>
+    body {
+        font-family: 'Helvetica', 'Arial', sans-serif;
+        font-size: 20px;
+        width: 850px;
+        max-width: 90%;
+        margin: auto;
+    }
+
+    .primary {
+        font-size: clamp(40px, 10vw, 80px);
+        text-align: center;
+    }
+
+    .accordion_button {
+        display: block;
+        width: 100%;
+        padding: 15px;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        background: #333333;
+        color: #ffffff;
+        text-align: left;
+        font-size: 20px;
+        transition: background 0.2s;
+    }
+
+    .accordion_button::after {
+        content: '\25be';
+        float: right;
+        transform: scale(1.5);
+    }
+
+    .accordion_button-active + .accordion_content { display: block }
+    .accordion_button-active { background: #555555 }
+    .accordion_button-active::after { content: '\25b4' }
+
+    .accordion_content {
+        padding: 0 15px;
+        background: #eeeeee;
+
+        display: none;
+        overflow: auto;
+    }
+
+</style>
+
 </html>
