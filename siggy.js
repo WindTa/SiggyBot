@@ -17,11 +17,11 @@ client.login(token);
 
 // Function to play intro theme when user joins.
 function join(member) {
-    let VoiceChannel = member.voiceChannel;
+    let VoiceChannel = member.channel;
 
     VoiceChannel.join()
     .then(connection => {
-        console.log("\t" + member.user.username + " joined " + VoiceChannel.name);
+        console.log("\t" + member.member.nickname + " joined " + VoiceChannel.name);
         var id = '';
         if (fs.existsSync("intro/" + member.id + ".mp3")) {
             id = member.id;
@@ -29,19 +29,30 @@ function join(member) {
             id = "default";
         }
         
-        const dispatcher = connection.playFile("intro/" + id + ".mp3");
-        dispatcher.on('start', () => {
+	const dispatcher = connection.play("intro/" + id + ".mp3");
+        
+	dispatcher.on('start', () => {
             connection.player.streamingData.pausedTime = 0;
         });
+
+	dispatcher.on('finish', () => {
+	    connection.disconnect();
+	});
+
+	// Error handle
+	connection.on('error', error => {
+	    console.log("Websocket error has occurred");
+	    
+	});
     })
-    .catch(console.error)
+    .catch(console.error);
 }
 
 // Function to notify when user leaves.
 function leave(member) {
-    let VoiceChannel = member.voiceChannel;
+    let VoiceChannel = member.channel;
 
-    console.log("\t" + member.user.username + " left " + VoiceChannel.name);
+    console.log("\t" + member.member.nickname + " left " + VoiceChannel.name);
 }
 
 // Displays to console when Siggy is ready to go
@@ -82,12 +93,12 @@ client.on("message", (message) => {
 // Commands for when a person joins, leaves, or moves channels.
 client.on('voiceStateUpdate', (oldMember, newMember) => {
     // Checks if user is a bot
-    if (oldMember.user.bot || newMember.user.bot) {
+    if (oldMember.member.user.bot || newMember.member.userbot) {
         return;
     }
 
-    let newUserChannel = newMember.voiceChannel;
-    let oldUserChannel = oldMember.voiceChannel;
+    let newUserChannel = newMember.channel;
+    let oldUserChannel = oldMember.channel;
 
     if (!oldUserChannel && newUserChannel) {
         // User joins a channel
