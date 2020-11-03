@@ -19,16 +19,17 @@ client.login(token);
 function join(member) {
     let VoiceChannel = member.channel;
 
+    console.log("\t" + member.member.nickname + " joined " + VoiceChannel.name);
+    var id = '';
+    if (fs.existsSync("intro/" + member.id + ".mp3")) {
+        id = member.id;
+    } else {
+        return;
+        id = "default";
+    }
+
     VoiceChannel.join()
     .then(connection => {
-        console.log("\t" + member.member.nickname + " joined " + VoiceChannel.name);
-        var id = '';
-        if (fs.existsSync("intro/" + member.id + ".mp3")) {
-            id = member.id;
-        } else {
-            id = "default";
-        }
-        
 	const dispatcher = connection.play("intro/" + id + ".mp3");
         
 	dispatcher.on('start', () => {
