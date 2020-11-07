@@ -112,6 +112,8 @@
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     var player;
 
+    setLeftValue();
+    setRightValue();
     function onYouTubePlayerAPIReady() {
         
         player = new YT.Player('player', {
