@@ -4,100 +4,504 @@
 <head>
     <meta charset="UTF-8">
     <title>SiggyBot</title>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 </head>
     
+<!-- Body -->
 <body>
-    <h1 class="primary">SiggyBot</h1>
-    <div>SiggyBot is a Discord bot that will play a custom audio signature when you join a voice channel. </div>
+    <div class="splitBody">
 
-    <hr>
+        <div class="left-container">
+            <h1 class="primary">SiggyBot</h1>
+            <div class="secondary">SiggyBot is a Discord bot that will play a custom audio signature when you join a voice channel. </div>
 
-    <!-- Need for your server? -->
-    <div class="accordion">
-        <button type="button" class="accordion_button">Need for your server?</button>
-        <div class="accordion_content">
-            <ol>
-                <li>Click the following link: </li>
-                <a href="https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184">https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184</a>
-                <li>Sign into your Discord account and select your server</li>
-                <li>SiggyBot will now be a part of your server</li>
-            </ol>
+            <ul>
+                <li>Use any YouTube audio</li>
+                <li>Customize start and end time with 0.01s precision</li>
+                <!--<li>Customize start and end fade times</li>-->
+            </ul>
+
+            <a href="https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184" target="_blank">
+                <button class="discordButton">Add SiggyBot to Discord</button>
+            </a>
+        </div>
+
+        <div class="right-container">
+            
+            <div class="splitSearch">
+                <input id="textBar" onClick="this.select();" placeholder="Insert YouTube URL here" class="textBar"></input>
+                <button id="searchButton" class="searchButton" type="submit">
+                    <i class="material-icons">search</i>
+                </button>
+            </div>
+
+            <div class="video-container">
+                <div id="player"></div>
+            </div>
+
+            <div class="attribute-container">
+                
+                <div class="timesliderBar1">
+                    <div class="multi-range-slider">
+                        <input type="range" id="input-left" min="0" max="10000" value="0"/>
+                        <input type="range" id="input-right" min="0" max="10000" value="1000"/>
+
+                        <div class="slider">
+                            <div class="track"></div>
+                            <div class="range"></div>
+                            <div class="thumb left"></div>
+                            <div class="thumb right"></div>
+                        </div>
+                    </div>
+                </div>
+                
+            
+                <div class="timesliderBar2">
+                    <label class="timeLabel">TIME RANGE</label>
+                    <input class="textBar" type="text" id="input-start" placeholder="START hh:mm:ss.xx"/>
+                    <input class="textBar" type="text" id="input-end" placeholder="END hh:mm:ss.xx"/>
+                </div>
+
+                <div class="timesliderBar2">
+                    <label class="timeLabel">DURATION </label>
+                    <input class="textBar" type="text" id="input-duration" placeholder="DURATION ss.xx"/>
+                </div>
+
+                <!--
+                <div class="timesliderBar2">
+                    <label class="timeLabel">FADE TIME </label>
+                    <input class="textBar" type="text" id="input-fade-start" placeholder="DURATION ss.xx"/>
+                    <input class="textBar" type="text" id="input-fade-end" placeholder="DURATION ss.xx"/>
+                </div>
+                -->
+
+                <div class="timesliderBar2">
+                    <button class="discordButton" id="clipboardButton" onclick="clipboard()">Copy to Clipboard</button>
+                </div>
+            </div>
+            
         </div>
     </div>
-
-    <!-- Need an audio signature? -->
-    <div class="accordion">
-        <button type="button" class="accordion_button">Need an audio signature?</button>
-        <div class="accordion_content">
-            <ol>
-                <li>Find a YouTube video</li>
-                <li>Pause where you want your audio signature to start</li> 
-                <li><mark>youtubeLink</mark>: right-click video, then select <b>Copy video URL at current time</b></li>
-                <li><mark>duration</mark>: decide how long you want your audio signature to be in seconds</li>
-                <li>In your discord server, enter <mark>youtubeLink</mark> and <mark>duration</mark> into the following command:
-                <div><b>?intro youtubeLink duration</b> (see gif below for example)</div>
-                <li>Re-enter voice channel and Siggy will play your audio signature</li>
-                <br>
-                <img src="intro.gif" style="width: 100%; height: 100%;">
-            </ol>
-        </div>
-    </div>
-
+    
 </body>
 
+<!-- Script -->
 <script>
-    document.querySelectorAll('.accordion_button').forEach(button => {
-        button.addEventListener('click', () => {
-            button.classList.toggle('accordion_button-active');
+    //Global variables
+    var searchInfo;
+
+    var inputLeft = document.getElementById("input-left");
+    var inputRight = document.getElementById("input-right");
+    var inputStart = document.getElementById("input-start");
+    var inputEnd = document.getElementById("input-end");
+    var inputDuration = document.getElementById("input-duration");
+
+    var thumbLeft = document.querySelector(".slider > .thumb.left");
+    var thumbRight = document.querySelector(".slider > .thumb.right");
+    var range = document.querySelector(".slider > .range");
+
+    //Setup scripts for YT video
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/player_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    var player;
+
+    function onYouTubePlayerAPIReady() {
+        
+        player = new YT.Player('player', {
+
+        });
+    }
+
+    /* Search Functions */
+    $(document).ready(function() {
+
+        //Search URL
+        $("#textBar").keyup(function(event) {
+            if (event.keyCode === 13) {
+                $("#searchButton").click();
+            }
+        });
+        $("#searchButton").click(function() {
+            searchInfo = urlParser($("#textBar").val()); 
+            loadVideo();
+
+            setTimeout(function() {
+                $("#input-left").attr("max", player.getDuration() * 100);
+                $("#input-right").attr("max", player.getDuration() * 100);
+                setLeftValue();
+                setRightValue();
+            }, 1000);
+            //player.loadVideoById(searchInfo[0]);
         });
     });
+
+    function loadVideo() {
+        player.loadVideoById({
+                'videoId': searchInfo[0],
+                'startSeconds': inputStart.textContent,
+                'endSeconds': inputEnd.textContent
+        });
+
+        inputDuration.value = (inputRight.value - inputLeft.value) / 100;
+    }
+
+    function urlParser(url) {
+        // Returns false if there is no URL
+        if (url === undefined) {
+            return [false, null];
+        }
+
+        var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*)?(\?t=)?(\d*(\.\d+)?)/;
+        var match = url.match(regExp);
+        return [match&&match[1].length==11 ? match[1] : null, match&&match[3].length!=0 ? match[3] : null];
+    }
+
+    /* Time slider graphic Bar*/
+
+    function setLeftValue() {
+        var _this = inputLeft,
+            min = parseInt(_this.min),
+            max = parseInt(_this.max);
+        _this.value = Math.min(parseInt(_this.value), parseInt(inputRight.value) - 1);
+
+        var percent = ((_this.value - min) / (max - min)) * 100;
+        var milliseconds = ((percent * max) / 10).toFixed(0);
+        var seconds = (milliseconds / 1000).toFixed(2);
+
+        thumbLeft.style.left = percent + "%";
+        range.style.left = percent + "%";
+
+        inputStart.value = hhmmss(milliseconds);
+        inputStart.textContent = seconds;
+    }
+
+    function setRightValue() {
+        var _this = inputRight,
+            min = parseInt(_this.min),
+            max = parseInt(_this.max);
+        _this.value = Math.max(parseInt(_this.value), parseInt(inputLeft.value) + 1);
+
+        var percent = ((_this.value - min) / (max - min)) * 100;
+        var milliseconds = ((percent * max) / 10).toFixed(0);
+        var seconds = (milliseconds / 1000).toFixed(2);
+        
+        thumbRight.style.right = (100 - percent) + "%";
+        range.style.right = (100 - percent) + "%";
+
+        inputEnd.value = hhmmss(milliseconds);
+        inputEnd.textContent = seconds;
+    }
+
+    function hhmmss(milliseconds) {
+        var ms = Math.floor(milliseconds % 1000);
+        if (ms > 99) ms /= 10;
+        var s = pad(Math.floor((milliseconds / 1000) % 60));
+        var m = pad(Math.floor((milliseconds / (1000 * 60))% 60));
+        var h = pad(Math.floor((milliseconds / (1000 * 60 * 60))% 24));
+
+        return `${h}:${m}:${s}.${ms}`.replace(/^0:(?:0:0?)?/, '');
+    }
+
+    function timeToMS(time) {
+        let hhmmss = time.split(':').map(x=>+x);
+        let j = hhmmss.length - 1;
+
+        let total = 0;
+        for (let i = 0; i <= j; i++) {
+            total += hhmmss[i] * Math.pow(60, j - i);
+        } 
+
+        return (total * 100).toFixed(0);
+    }
+
+    function pad(n) {
+        return (n < 10) ? ("0" + n) : n;
+    }  
+
+    function clipboard() {
+        navigator.clipboard.writeText("?intro https://youtube.com/watch?v=" + searchInfo[0] + "?t=" + inputLeft.value / 100 + " " + inputDuration.value);
+    }
+
+    inputLeft.addEventListener("input", setLeftValue);
+    inputRight.addEventListener("input", setRightValue);
+    inputStart.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            inputLeft.value = timeToMS(inputStart.value);
+            setLeftValue();
+            loadVideo();
+        }
+    });
+    inputEnd.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            inputRight.value = timeToMS(inputEnd.value);
+            setRightValue();
+            loadVideo();
+        }
+    });
+    inputDuration.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+            inputRight.value = +(inputLeft.value) + +(inputDuration.value * 100);
+            setRightValue();
+            loadVideo();
+        }
+    });
+
+    inputLeft.addEventListener("mouseover", function() {
+        thumbLeft.classList.add("hover");
+    });
+    inputLeft.addEventListener("mouseout", function() {
+        thumbLeft.classList.remove("hover");
+    });
+    inputLeft.addEventListener("mousedown", function() {
+        thumbLeft.classList.add("active");
+    });
+    inputLeft.addEventListener("mouseup", function() {
+        thumbLeft.classList.remove("active");
+        loadVideo();
+    });
+
+    inputRight.addEventListener("mouseover", function() {
+        thumbRight.classList.add("hover");
+    });
+    inputRight.addEventListener("mouseout", function() {
+        thumbRight.classList.remove("hover");
+    });
+    inputRight.addEventListener("mousedown", function() {
+        thumbRight.classList.add("active");
+    });
+    inputRight.addEventListener("mouseup", function() {
+        thumbRight.classList.remove("active");
+        loadVideo();
+    });
+
 </script>
 
 <!-- Styling -->
 <style>
     body {
+        background-color: #202020;
+
         font-family: 'Helvetica', 'Arial', sans-serif;
         font-size: 20px;
-        width: 850px;
-        max-width: 90%;
-        margin: auto;
+        color: #a9a9a9;
     }
 
+    .splitBody {    
+        display: grid;
+        grid-template-columns: fit-content(500px) 1fr;
+        column-gap: 25px;
+    }
+
+    .left-container {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .right-container {
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* Left Panel */
     .primary {
         font-size: clamp(40px, 10vw, 80px);
         text-align: center;
+        color: #dddddd;
     }
 
-    .accordion_button {
-        display: block;
-        width: 100%;
-        padding: 15px;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        background: #333333;
-        color: #ffffff;
-        text-align: left;
+    .secondary {
         font-size: 20px;
-        transition: background 0.2s;
     }
 
-    .accordion_button::after {
-        content: '\25be';
-        float: right;
-        transform: scale(1.5);
+    .discordButton {
+        background-color: #7289da;
+        border-color: #7289da;
+        border-radius: 3px;
+        border-style: solid;
+        outline: 0;
+
+        color: #ffffff;
+        font-size: 20px;
+        width: 100%;
+        height: 50px;
     }
 
-    .accordion_button-active + .accordion_content { display: block }
-    .accordion_button-active { background: #555555 }
-    .accordion_button-active::after { content: '\25b4' }
+    .discordButton:active {
+        background-color: #5b6eae;
+        border-color: #5b6eae;
+        border-radius: 3px;
+        border-style: solid;
+    }
 
-    .accordion_content {
-        padding: 0 15px;
-        background: #eeeeee;
+    /* Right Panel */
+    .splitSearch {
+        display: grid;
+        grid-template-columns: 50% 75px;
 
-        display: none;
-        overflow: auto;
+        padding-bottom: 25px;
+    }
+
+    .textBar {
+        background-color: #030303;
+        padding-left: 10px;
+        border-color: #323232;
+        border-radius: 3px 0 0 3px;
+        border-style: solid;
+        outline: 0;
+        height: 33px;
+
+        color: #dddddd;
+        font-size: 20px;
+    }
+
+    .textBar:focus {
+        border-color: #1c63b9;
+    }
+
+    .searchButton {
+        background-color: #323232;
+        border-color: #323232;
+        border-radius: 0px 3px 3px 0;
+        border-style: solid;
+        outline: 0;
+        padding-top: 5px;
+
+        color: #6f6f6f;
+    }
+
+    .searchButton:hover {
+        color: #999999;
+    }
+
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        
+        height: 0;
+    }
+
+    .video-container iframe {
+        position: absolute;
+
+        border-color: #323232;
+        border-radius: 3px;
+        border-style: solid;
+        outline: 0;
+
+        top: 0;
+        left: 0;
+        width: 70%;
+        height: 70%;
+    }
+
+    /*Attribute Fields*/
+    .attribute-container {
+        margin-top: -15%;
+    }
+
+    /*Timeslider Graphic*/
+    .timesliderBar1 {
+        position: relative;
+        width: 70%;
+    }
+
+    .slider {
+        position: relative;
+        z-index: 1;
+        height: 5px;
+    }
+
+    .slider > .track {
+        position: absolute;
+        z-index: 1;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 5px;
+        background-color: #9a9a9a;
+    }
+
+    .slider > .range {
+        position: absolute;
+        z-index: 2;
+        left: 25%;
+        right: 25%;
+        top: 0;
+        bottom: 0;
+        border-radius: 5px;
+        background-color: #ff0000;
+    }
+
+    .slider > .thumb {
+        position: absolute;
+        z-index: 3;
+        width: 5px;
+        height: 20px;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1);
+        transition: box-shadow 0.3s ease-in-out;
+    }
+
+    .slider > .thumb.left {
+        left: 25%;
+        transform: translate(0px, -8px);
+    }
+
+    .slider > .thumb.right {
+        right: 25%;
+        transform: translate(0px, -8px);
+    }
+
+    .slider > .thumb.hover {
+        box-shadow: 0 0 0 1px rgba(255,255,255, 1);
+    }
+
+    .slider > .thumb.active {
+        box-shadow: 0 0 0 2px rgba(255,0,0, 1);
+    }
+
+    input[type=range] {
+        position: absolute;
+        pointer-events: none;
+        -webkit-appearance: none;
+        z-index: 2;
+        height: 10px;
+        width: 100%;
+        opacity: 0;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        pointer-events: all; 
+        width: 30px;
+        height: 30px;
+        border-radius: 0;
+        border: 0 none;
+        background-color: red;
+        -webkit-appearance: none;
+    }
+
+    /*Timeslider Text Inputs*/
+    .timesliderBar2 {
+        margin-top: 2%;
+        position: relative;
+        width: 70%;
+    }
+
+    .timeLabel {
+        display: inline-block;
+        width: 150px;
+        height: 33px;
+
+        color: #dddddd;
+        font-size: 20px;
     }
 
 </style>
