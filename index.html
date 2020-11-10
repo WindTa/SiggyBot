@@ -5,213 +5,206 @@
     <meta charset="UTF-8">
     <title>SiggyBot</title>
 
+    <!-- Default Style -->
+    <link rel="stylesheet" href="css/main.css">
+
     <!-- Icons -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <!-- jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+    <!-- noUiSlider -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.2/nouislider.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.2/nouislider.css">
+
 </head>
     
-<!-- Body -->
 <body>
-    <div class="splitBody">
-
-        <div class="left-container">
-            <h1 class="primary">SiggyBot</h1>
-            <div class="secondary">SiggyBot is a Discord bot that will play a custom audio signature when you join a voice channel. </div>
-
-            <ul>
-                <li>Use any YouTube audio</li>
-                <li>Customize start and end time with 0.01s precision</li>
-                <!--<li>Customize start and end fade times</li>-->
-            </ul>
-
-            <a href="https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184" target="_blank">
-                <button class="discordButton">Add SiggyBot to Discord</button>
-            </a>
+    <div class="l-window">
+        <div class="l-window__left">
+            <div class="c-content c-content--top">
+                <div class="c-content__title">SiggyBot</div>
+                <div class="c-content__description">SiggyBot is a Discord bot that will play a custom audio signature when you join a voice channel.</div>
+                <ul class="c-content__ul">
+                    <li>Use any YouTube audio</li>
+                    <li>Customize start and end time with 0.01s precision</li>
+                    <!--<li>Customize start and end fade times</li>-->
+                </ul>
+                <a href="https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184" target="_blank">
+                    <button class="c-button">Add SiggyBot</button>
+                </a>
+                
+            </div>
+            <div class="c-content c-content--bottom">
+                <div class="c-content__label">TIME RANGE</div>
+                <input class="c-input-text" id="text-start" placeholder="START HH:MM:SS.ss"></input>
+                <input class="c-input-text" id="text-end" placeholder="END HH:MM:SS.ss"></input>
+                <div class="c-content__label">DURATION</div>
+                <input class="c-input-text" id="text-duration" type="number" placeholder="DURATION SS.ss"></input>
+                <button class="c-button" onclick="clipboard()">Copy to Clipboard</button>
+            </div>
         </div>
-
-        <div class="right-container">
-            
-            <div class="splitSearch">
-                <input id="textBar" onClick="this.select();" placeholder="Insert YouTube URL here" class="textBar"></input>
-                <button id="searchButton" class="searchButton" type="submit">
+        <div class="l-window__right">
+            <div class="c-search">
+                <input class="c-input-text c-input-text--search" id="text-search" placeholder="Insert YouTube URL here"></input>
+                <button class="c-button c-button--search" id="button-search">
                     <i class="material-icons">search</i>
                 </button>
             </div>
 
-            <div class="video-container">
+            <div class="c-video">
                 <div id="player"></div>
             </div>
 
-            <div class="attribute-container">
-                
-                <div class="timesliderBar1">
-                    <div class="multi-range-slider">
-                        <input type="range" id="input-left" min="0" max="10000" value="0"/>
-                        <input type="range" id="input-right" min="0" max="10000" value="1000"/>
-
-                        <div class="slider">
-                            <div class="track"></div>
-                            <div class="range"></div>
-                            <div class="thumb left"></div>
-                            <div class="thumb right"></div>
-                        </div>
-                    </div>
-                </div>
-                
-            
-                <div class="timesliderBar2">
-                    <label class="timeLabel">TIME RANGE</label>
-                    <input class="textBar" type="text" id="input-start" placeholder="START hh:mm:ss.xx"/>
-                    <input class="textBar" type="text" id="input-end" placeholder="END hh:mm:ss.xx"/>
-                </div>
-
-                <div class="timesliderBar2">
-                    <label class="timeLabel">DURATION </label>
-                    <input class="textBar" type="text" id="input-duration" placeholder="DURATION ss.xx"/>
-                </div>
-
-                <!--
-                <div class="timesliderBar2">
-                    <label class="timeLabel">FADE TIME </label>
-                    <input class="textBar" type="text" id="input-fade-start" placeholder="DURATION ss.xx"/>
-                    <input class="textBar" type="text" id="input-fade-end" placeholder="DURATION ss.xx"/>
-                </div>
-                -->
-
-                <div class="timesliderBar2">
-                    <button class="discordButton" id="clipboardButton" onclick="clipboard()">Copy to Clipboard</button>
-                </div>
-            </div>
-            
+            <div class="c-slider" id="slider"></div>
         </div>
     </div>
-    
 </body>
 
-<!-- Script -->
 <script>
-    //Global variables
-    var searchInfo;
+    // Global variables
+    var searchInfo = [null, null];
+    var slider = document.getElementById('slider');
+    var textStart = $("#text-start");
+    var textEnd = $("#text-end");
+    var textDuration = $("#text-duration");
 
-    var inputLeft = document.getElementById("input-left");
-    var inputRight = document.getElementById("input-right");
-    var inputStart = document.getElementById("input-start");
-    var inputEnd = document.getElementById("input-end");
-    var inputDuration = document.getElementById("input-duration");
-
-    var thumbLeft = document.querySelector(".slider > .thumb.left");
-    var thumbRight = document.querySelector(".slider > .thumb.right");
-    var range = document.querySelector(".slider > .range");
-
-    //Setup scripts for YT video
+    /*Initialize embed YT and slider*/
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/player_api";
     var firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     var player;
-
-    setLeftValue();
-    setRightValue();
     function onYouTubePlayerAPIReady() {
-        
         player = new YT.Player('player', {
-
         });
     }
-
-    /* Search Functions */
-    $(document).ready(function() {
-
-        //Search URL
-        $("#textBar").keyup(function(event) {
-            if (event.keyCode === 13) {
-                $("#searchButton").click();
-            }
-        });
-        $("#searchButton").click(function() {
-            searchInfo = urlParser($("#textBar").val()); 
-            loadVideo();
-
-            setTimeout(function() {
-                $("#input-left").attr("max", player.getDuration() * 100);
-                $("#input-right").attr("max", player.getDuration() * 100);
-                setLeftValue();
-                setRightValue();
-            }, 1000);
-            //player.loadVideoById(searchInfo[0]);
-        });
+    noUiSlider.create(slider, {
+        start: [0, 10],
+        behaviour: 'drag',
+        connect: true,
+        range: {
+            'min': 0,
+            'max': 100
+        }
     });
 
-    function loadVideo() {
-        player.loadVideoById({
-                'videoId': searchInfo[0],
-                'startSeconds': inputStart.textContent,
-                'endSeconds': inputEnd.textContent
-        });
-
-        inputDuration.value = (inputRight.value - inputLeft.value) / 100;
-    }
-
+    // Parse URL to get YT ID
     function urlParser(url) {
         // Returns false if there is no URL
         if (url === undefined) {
             return [false, null];
         }
 
+        url = url.replace(/\s+/g, '');
+
         var regExp = /.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*)?(\?t=)?(\d*(\.\d+)?)/;
         var match = url.match(regExp);
         return [match&&match[1].length==11 ? match[1] : null, match&&match[3].length!=0 ? match[3] : null];
     }
 
-    /* Time slider graphic Bar*/
+    /*Set search listeners*/
+    $(document).ready(function() {
+        $("#text-search").keyup(function(event) {
+            if (event.keyCode === 13) {
+                $("#button-search").click();
+            }
+        });
+        $("#button-search").click(function() {
+            searchInfo = urlParser($("#text-search").val());
+            reloadVideo(0, 10);
 
-    function setLeftValue() {
-        var _this = inputLeft,
-            min = parseInt(_this.min),
-            max = parseInt(_this.max);
-        _this.value = Math.min(parseInt(_this.value), parseInt(inputRight.value) - 1);
+            setTimeout(function() {
+                reloadSliderMinMax(0, player.getDuration());
+            }, 1000);
+        });
+        $("#text-start").keyup(function(event) {
+            if (event.keyCode === 13) {
+                var start = timeToSeconds(textStart.val());
+                var end = slider.noUiSlider.get()[1];
+                reloadVideo(start, end);
+                reloadSliderStartEnd(start, end);
+            }
+        });
+        $("#text-end").keyup(function(event) {
+            if (event.keyCode === 13) {
+                var start = slider.noUiSlider.get()[0];
+                var end = timeToSeconds(textEnd.val());
+                reloadVideo(start, end);
+                reloadSliderStartEnd(start, end);
+            }
+        });
+        $("#text-duration").keyup(function(event) {
+            if (event.keyCode === 13) {
+                var start = slider.noUiSlider.get()[0];
+                var duration = textDuration.val();
+                var end = +start + +duration;
+                reloadVideo(start, end);
+                reloadSliderStartEnd(start, end);
+            }
+        });
+    });
 
-        var percent = ((_this.value - min) / (max - min)) * 100;
-        var milliseconds = ((percent * max) / 10).toFixed(0);
-        var seconds = (milliseconds / 1000).toFixed(2);
-
-        thumbLeft.style.left = percent + "%";
-        range.style.left = percent + "%";
-
-        inputStart.value = hhmmss(milliseconds);
-        inputStart.textContent = seconds;
-    }
-
-    function setRightValue() {
-        var _this = inputRight,
-            min = parseInt(_this.min),
-            max = parseInt(_this.max);
-        _this.value = Math.max(parseInt(_this.value), parseInt(inputLeft.value) + 1);
-
-        var percent = ((_this.value - min) / (max - min)) * 100;
-        var milliseconds = ((percent * max) / 10).toFixed(0);
-        var seconds = (milliseconds / 1000).toFixed(2);
+    /*Set slider listeners*/
+    slider.noUiSlider.on('update', function() {
+        // if invalid video id
+        if (searchInfo[0] == null) {
+            textStart.val("");
+            textEnd.val(""); 
+            textDuration.val("");
+            return;
+        };
         
-        thumbRight.style.right = (100 - percent) + "%";
-        range.style.right = (100 - percent) + "%";
+        //update start and end text boxes
+        var [start, end] = slider.noUiSlider.get();
+        textStart.val(secondsToTime(start));
+        textEnd.val(secondsToTime(end));
+        textDuration.val((+end - +start).toFixed(2));
+    });
+    slider.noUiSlider.on('end', function() {
+        //update video
+        var [start,end] = slider.noUiSlider.get();
+        reloadVideo(start, end);
+    });
 
-        inputEnd.value = hhmmss(milliseconds);
-        inputEnd.textContent = seconds;
+    /*Reload video and slider*/
+    function reloadVideo(start, end) {
+        player.loadVideoById({
+                'videoId': searchInfo[0],
+                'startSeconds': start,
+                'endSeconds': end
+        });
+    }
+    function reloadSliderStartEnd(start, end) {
+        slider.noUiSlider.updateOptions({
+            start: [start, end]
+        });
+    }
+    function reloadSliderMinMax(min, max) {
+        slider.noUiSlider.updateOptions({
+            start: [0, 10],
+            range: {
+                'min': min,
+                'max': max
+            }
+        });
     }
 
-    function hhmmss(milliseconds) {
-        var ms = Math.floor(milliseconds % 1000);
-        if (ms > 99) ms /= 10;
-        var s = pad(Math.floor((milliseconds / 1000) % 60));
-        var m = pad(Math.floor((milliseconds / (1000 * 60))% 60));
-        var h = pad(Math.floor((milliseconds / (1000 * 60 * 60))% 24));
+    // Convert seconds to hhmmss
+    function secondsToTime(seconds) {
+        var ss = pad((seconds % 60).toFixed(2));
+        var mm = pad(Math.floor(seconds / 60 % 60));
+        var hh = pad(Math.floor(seconds / (60*60) % 60));
 
-        return `${h}:${m}:${s}.${ms}`.replace(/^0:(?:0:0?)?/, '');
+        return `${hh}:${mm}:${ss}`.replace(/^0:(?:0:0?)?/, '');
     }
+    function pad(n) {
+        return (n < 10) ? ("0" + n) : n;
+    }  
 
-    function timeToMS(time) {
+    // Convert hhmmss to seconds
+    function timeToSeconds(time) {
         let hhmmss = time.split(':').map(x=>+x);
         let j = hhmmss.length - 1;
 
@@ -220,292 +213,19 @@
             total += hhmmss[i] * Math.pow(60, j - i);
         } 
 
-        return (total * 100).toFixed(0);
+        return total.toFixed(2);
     }
 
-    function pad(n) {
-        return (n < 10) ? ("0" + n) : n;
-    }  
-
+    // Copy to clipboard
     function clipboard() {
-        navigator.clipboard.writeText("?intro https://youtube.com/watch?v=" + searchInfo[0] + "?t=" + inputLeft.value / 100 + " " + inputDuration.value);
+        var id = searchInfo[0];
+        var start = slider.noUiSlider.get()[0];
+        var duration = textDuration.val();
+        var command = "?intro https://youtube.com/watch?v=" + id + "?t=" + start + " " + duration;
+        navigator.clipboard.writeText(command);
+        alert("COPIED. \nPaste and enter into a text channel. ");
     }
-
-    inputLeft.addEventListener("input", setLeftValue);
-    inputRight.addEventListener("input", setRightValue);
-    inputStart.addEventListener("keyup", function(event) {
-        if (event.keyCode === 13) {
-            inputLeft.value = timeToMS(inputStart.value);
-            setLeftValue();
-            loadVideo();
-        }
-    });
-    inputEnd.addEventListener("keyup", function(event) {
-        if (event.keyCode === 13) {
-            inputRight.value = timeToMS(inputEnd.value);
-            setRightValue();
-            loadVideo();
-        }
-    });
-    inputDuration.addEventListener("keyup", function(event) {
-        if (event.keyCode === 13) {
-            inputRight.value = +(inputLeft.value) + +(inputDuration.value * 100);
-            setRightValue();
-            loadVideo();
-        }
-    });
-
-    inputLeft.addEventListener("mouseover", function() {
-        thumbLeft.classList.add("hover");
-    });
-    inputLeft.addEventListener("mouseout", function() {
-        thumbLeft.classList.remove("hover");
-    });
-    inputLeft.addEventListener("mousedown", function() {
-        thumbLeft.classList.add("active");
-    });
-    inputLeft.addEventListener("mouseup", function() {
-        thumbLeft.classList.remove("active");
-        loadVideo();
-    });
-
-    inputRight.addEventListener("mouseover", function() {
-        thumbRight.classList.add("hover");
-    });
-    inputRight.addEventListener("mouseout", function() {
-        thumbRight.classList.remove("hover");
-    });
-    inputRight.addEventListener("mousedown", function() {
-        thumbRight.classList.add("active");
-    });
-    inputRight.addEventListener("mouseup", function() {
-        thumbRight.classList.remove("active");
-        loadVideo();
-    });
-
+   
 </script>
-
-<!-- Styling -->
-<style>
-    body {
-        background-color: #202020;
-
-        font-family: 'Helvetica', 'Arial', sans-serif;
-        font-size: 20px;
-        color: #a9a9a9;
-    }
-
-    .splitBody {    
-        display: grid;
-        grid-template-columns: fit-content(500px) 1fr;
-        column-gap: 25px;
-    }
-
-    .left-container {
-        min-width: 0;
-        width: 100%;
-    }
-
-    .right-container {
-        min-width: 0;
-        width: 100%;
-    }
-
-    /* Left Panel */
-    .primary {
-        font-size: clamp(40px, 10vw, 80px);
-        text-align: center;
-        color: #dddddd;
-    }
-
-    .secondary {
-        font-size: 20px;
-    }
-
-    .discordButton {
-        background-color: #7289da;
-        border-color: #7289da;
-        border-radius: 3px;
-        border-style: solid;
-        outline: 0;
-
-        color: #ffffff;
-        font-size: 20px;
-        width: 100%;
-        height: 50px;
-    }
-
-    .discordButton:active {
-        background-color: #5b6eae;
-        border-color: #5b6eae;
-        border-radius: 3px;
-        border-style: solid;
-    }
-
-    /* Right Panel */
-    .splitSearch {
-        display: grid;
-        grid-template-columns: 50% 75px;
-
-        padding-bottom: 25px;
-    }
-
-    .textBar {
-        background-color: #030303;
-        padding-left: 10px;
-        border-color: #323232;
-        border-radius: 3px 0 0 3px;
-        border-style: solid;
-        outline: 0;
-        height: 33px;
-
-        color: #dddddd;
-        font-size: 20px;
-    }
-
-    .textBar:focus {
-        border-color: #1c63b9;
-    }
-
-    .searchButton {
-        background-color: #323232;
-        border-color: #323232;
-        border-radius: 0px 3px 3px 0;
-        border-style: solid;
-        outline: 0;
-        padding-top: 5px;
-
-        color: #6f6f6f;
-    }
-
-    .searchButton:hover {
-        color: #999999;
-    }
-
-    .video-container {
-        position: relative;
-        padding-bottom: 56.25%;
-        
-        height: 0;
-    }
-
-    .video-container iframe {
-        position: absolute;
-
-        border-color: #323232;
-        border-radius: 3px;
-        border-style: solid;
-        outline: 0;
-
-        top: 0;
-        left: 0;
-        width: 70%;
-        height: 70%;
-    }
-
-    /*Attribute Fields*/
-    .attribute-container {
-        margin-top: -15%;
-    }
-
-    /*Timeslider Graphic*/
-    .timesliderBar1 {
-        position: relative;
-        width: 70%;
-    }
-
-    .slider {
-        position: relative;
-        z-index: 1;
-        height: 5px;
-    }
-
-    .slider > .track {
-        position: absolute;
-        z-index: 1;
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        border-radius: 5px;
-        background-color: #9a9a9a;
-    }
-
-    .slider > .range {
-        position: absolute;
-        z-index: 2;
-        left: 25%;
-        right: 25%;
-        top: 0;
-        bottom: 0;
-        border-radius: 5px;
-        background-color: #ff0000;
-    }
-
-    .slider > .thumb {
-        position: absolute;
-        z-index: 3;
-        width: 5px;
-        height: 20px;
-        background-color: #ffffff;
-        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1);
-        transition: box-shadow 0.3s ease-in-out;
-    }
-
-    .slider > .thumb.left {
-        left: 25%;
-        transform: translate(0px, -8px);
-    }
-
-    .slider > .thumb.right {
-        right: 25%;
-        transform: translate(0px, -8px);
-    }
-
-    .slider > .thumb.hover {
-        box-shadow: 0 0 0 1px rgba(255,255,255, 1);
-    }
-
-    .slider > .thumb.active {
-        box-shadow: 0 0 0 2px rgba(255,0,0, 1);
-    }
-
-    input[type=range] {
-        position: absolute;
-        pointer-events: none;
-        -webkit-appearance: none;
-        z-index: 2;
-        height: 10px;
-        width: 100%;
-        opacity: 0;
-    }
-
-    input[type=range]::-webkit-slider-thumb {
-        pointer-events: all; 
-        width: 30px;
-        height: 30px;
-        border-radius: 0;
-        border: 0 none;
-        background-color: red;
-        -webkit-appearance: none;
-    }
-
-    /*Timeslider Text Inputs*/
-    .timesliderBar2 {
-        margin-top: 2%;
-        position: relative;
-        width: 70%;
-    }
-
-    .timeLabel {
-        display: inline-block;
-        width: 150px;
-        height: 33px;
-
-        color: #dddddd;
-        font-size: 20px;
-    }
-
-</style>
 
 </html>
