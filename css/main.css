@@ -23,7 +23,7 @@ body {
 .c-content {
     width: 100%;
 }
-.c-content--top{
+.c-content--top {
     position: absolute;
     top: 0;
 }
@@ -39,10 +39,6 @@ body {
 }
 .c-content__description {
     margin-top: 20px;
-}
-.c-content__label {
-    margin-top: 25px;
-    color: #dddddd
 }
 
 .c-button {
@@ -81,12 +77,26 @@ body {
     color: #999999
 }
 
+.c-text-bar {
+    display: grid;
+    grid-template-columns: 25% 75%;
+}
+.c-text__label {
+    display: table-cell;
+    background-color: #323232;
+    border-radius: 3px 0 0 3px;
 
-.c-input-text {
+    padding-left: 10px;
+    height: 50px;
+    line-height: 50px;
+    color: #dddddd;
+    
+}
+.c-text__input {
     position: relative;
     background-color: #030303;
     border-color: #323232;
-    border-radius: 3px;
+    border-radius: 0 3px 3px 0; 
     border-style: solid;
     border-width: 1px;
     outline: 0;
@@ -100,12 +110,12 @@ body {
     width: 100%;
     height: 50px;
 }
-.c-input-text--search {
+.c-text__input--search {
     border-radius: 3px 0 0 3px;
     box-sizing: border-box;
     padding-left: 10px;
 }
-.c-input-text:focus {
+.c-text__input:focus {
     border-color: #1c63b9;
 }
 
@@ -138,6 +148,7 @@ body {
 
 .c-slider {
     width: 95%;
+    bottom: 5px;
 }
 #slider .noUi-connect {
     background: red;
