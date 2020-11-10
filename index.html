@@ -66,10 +66,12 @@
     // Global variables
     var searchInfo = [null, null];
     var slider = document.getElementById('slider');
+    var textSearch = $("#text-search");
+    var buttonSearch = $("#button-search");
     var textStart = $("#text-start");
     var textEnd = $("#text-end");
     var textDuration = $("#text-duration");
-
+    
     /*Initialize embed YT and slider*/
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/player_api";
@@ -108,16 +110,13 @@
     $(document).ready(function() {
         $("#text-search").keyup(function(event) {
             if (event.keyCode === 13) {
-                $("#button-search").click();
+                buttonSearch.click();
             }
         });
         $("#button-search").click(function() {
-            searchInfo = urlParser($("#text-search").val());
+            searchInfo = urlParser(textSearch.val());
             reloadVideo(0, 10);
-
-            setTimeout(function() {
-                reloadSliderMinMax(0, player.getDuration());
-            }, 1000);
+            reloadSliderMinMax();
         });
         $("#text-start").keyup(function(event) {
             if (event.keyCode === 13) {
@@ -181,14 +180,21 @@
             start: [start, end]
         });
     }
-    function reloadSliderMinMax(min, max) {
-        slider.noUiSlider.updateOptions({
-            start: [0, 10],
-            range: {
-                'min': min,
-                'max': max
-            }
-        });
+    function reloadSliderMinMax() {
+        var min = 0;
+
+        if (player.getPlayerState() == 1) {
+            var max = player.getDuration();
+            slider.noUiSlider.updateOptions({
+                start: [0, 10],
+                range: {
+                    'min': min,
+                    'max': max
+                }
+            });
+        } else {
+            setTimeout(reloadSliderMinMax, 250);
+        }
     }
 
     // Convert seconds to hhmmss
