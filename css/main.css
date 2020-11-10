@@ -1,0 +1,160 @@
+body {
+    background: #202020;
+    margin: 20px;
+
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-size: 20px;
+    color: #a9a9a9;
+}
+
+.l-window {
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    column-gap: 25px;
+}
+.l-window__left {
+    position: relative;
+}
+.l-window__right {
+    min-width: 0;
+    width: 100%;
+}
+
+.c-content {
+    width: 100%;
+}
+.c-content--top{
+    position: absolute;
+    top: 0;
+}
+.c-content--bottom {
+    position: absolute;
+    bottom: 0;
+}
+.c-content__title {
+    font-size: 80px;
+    font-weight: bold;
+    text-align: center;
+    color: #dddddd;
+}
+.c-content__description {
+    margin-top: 20px;
+}
+.c-content__label {
+    margin-top: 25px;
+    color: #dddddd
+}
+
+.c-button {
+    background-color: #7289da;
+    border-color: #7289da;
+    border-radius: 3px;
+    border-style: solid;
+    outline: 0;
+    
+    color: #ffffff;
+    font-size: 20px;
+    width: 100%;
+    height: 50px;
+}
+.c-button:hover {
+    cursor: pointer;
+}
+.c-button:active{
+    background-color: #5b6eae;
+    border-color: #5b6eae;
+}
+.c-button--search {
+    background-color: #323232;
+    border-color: #323232;
+    border-radius: 0 3px 3px 0;
+
+    color: #6f6f6f;
+}
+.c-button--search:hover {
+    color: #999999
+}
+.c-button--search:active {
+    background-color: #323232;
+    border-color: #323232;
+
+    color: #999999
+}
+
+
+.c-input-text {
+    position: relative;
+    background-color: #030303;
+    border-color: #323232;
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 1px;
+    outline: 0;
+    
+    box-sizing: border-box;
+    padding-left: 10px;
+    margin-bottom: 10px;
+
+    color: #dddddd;
+    font-size: 20px;
+    width: 100%;
+    height: 50px;
+}
+.c-input-text--search {
+    border-radius: 3px 0 0 3px;
+    box-sizing: border-box;
+    padding-left: 10px;
+}
+.c-input-text:focus {
+    border-color: #1c63b9;
+}
+
+.c-search {
+    display: grid;
+    grid-template-columns: 50% 75px;
+
+    padding-bottom: 25px;
+}
+
+.c-video {
+    position: relative;
+    padding-bottom: 56.25%;
+    
+    height: 0;
+}
+.c-video iframe {
+    position: absolute;
+
+    border-color: #323232;
+    border-radius: 3px;
+    border-style: solid;
+    outline: 0;
+
+    top: 0;
+    left: 0;
+    width: 95%;
+    height: 95%;
+}
+
+.c-slider {
+    width: 95%;
+}
+#slider .noUi-connect {
+    background: red;
+}
+#slider .noUi-handle {
+    border-color: black;
+}
+#slider .noUi-handle:hover {
+    border-color: black;
+    cursor: pointer;
+}
+#slider .noUi-active {
+    background: red;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
