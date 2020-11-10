@@ -37,7 +37,9 @@ function join(member) {
         });
 
 	dispatcher.on('finish', () => {
-	    connection.disconnect();
+        setTimeout(function() {
+            connection.disconnect();
+        }, 1000);
 	});
 
 	// Error handle
