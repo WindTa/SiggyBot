@@ -191,7 +191,7 @@
             var id = searchInfo[0];
             var start = slider.noUiSlider.get()[0];
             var duration = textDuration.val();
-            var volume = sliderVolume.noUiSlider.get();
+            var volume = sliderVolume.noUiSlider.get() / 100;
             var command = "?intro https://youtube.com/watch?v=" + id + "?t=" + start + " " + duration + " " + volume;
             navigator.clipboard.writeText(command);
             alert("COPIED. \nPaste and enter into a text channel. ");
