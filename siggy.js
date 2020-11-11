@@ -30,8 +30,7 @@ function join(member) {
 
     VoiceChannel.join()
     .then(connection => {
-	const dispatcher = connection.play("intro/" + id + ".mp3");
-        
+	const dispatcher = connection.play("intro/" + id + ".mp3", { volume: 0.5});
 	dispatcher.on('start', () => {
             connection.player.streamingData.pausedTime = 0;
         });
