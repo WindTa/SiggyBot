@@ -37,9 +37,12 @@ function join(member) {
         });
 
 	dispatcher.on('finish', () => {
+        connection.disconnect();
+        /*
         setTimeout(function() {
             connection.disconnect();
         }, 1000);
+        */
 	});
 
 	// Error handle
@@ -80,15 +83,15 @@ client.on("message", (message) => {
         case 'intro':
             // Checks to see if second argument is a YouTube link
             [parsedYTID, parsedTime]  = Youtube.urlParser(args[1]);
-            
             if (!parsedYTID) {
                 message.channel.send("You need to provide a YouTube link!");
                 message.channel.send(help);
                 return;
             }
             
-            duration = Youtube.durationValue(args[2]);
-            Youtube.mp3Cutter(parsedYTID, message.author.id, +parsedTime, +duration, message.channel);
+            duration = Youtube.numValue(args[2]);
+            volume = Youtube.numValue(args[3]);
+            Youtube.mp3Cutter(parsedYTID, message.author.id, +parsedTime, +duration, +volume, message.channel);
         break;
     }
 });
