@@ -60,6 +60,31 @@ body {
     background-color: #5b6eae;
     border-color: #5b6eae;
 }
+.c-button--replay {
+    background-color: #323232;
+    border-color: #323232;
+    border-radius: 3px 0 0 3px;
+
+    color: #dddddd;
+}
+.c-button--replay:hover {
+    background-color: #323232;
+    border-color: #323232;
+
+    color: #999999;
+}
+.c-button--volume {
+    background-color: #030303;
+    border-color: #030303;
+    border-radius: 0 3px 3px 0;
+
+    color: #dddddd;
+}
+.c-button--volume:active {
+    background-color: #030303;
+    border-color: #030303;
+    color: #999999;
+}
 .c-button--search {
     background-color: #323232;
     border-color: #323232;
@@ -77,6 +102,16 @@ body {
     color: #999999
 }
 
+.c-volume-bar {
+    display: grid;
+    grid-template-columns: 10% 90%;
+    margin-bottom: 10px;
+
+    background-color: #030303;
+    border-color: #030303;
+    border-radius: 0 3px 3px 0;
+}
+
 .c-text-bar {
     display: grid;
     grid-template-columns: 25% 75%;
@@ -84,13 +119,11 @@ body {
 .c-text__label {
     display: table-cell;
     background-color: #323232;
-    border-radius: 3px 0 0 3px;
 
     padding-left: 10px;
     height: 50px;
     line-height: 50px;
     color: #dddddd;
-    
 }
 .c-text__input {
     position: relative;
@@ -145,23 +178,38 @@ body {
     width: 95%;
     height: 95%;
 }
+.c-video__buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
 
 .c-slider {
     width: 95%;
-    bottom: 5px;
+    bottom: -30%;
 }
-#slider .noUi-connect {
-    background: red;
+.c-slider--time {
+    bottom: 5%;
 }
-#slider .noUi-handle {
-    border-color: black;
+.noUi-connect {
+    background: red !important;
 }
-#slider .noUi-handle:hover {
-    border-color: black;
-    cursor: pointer;
+.noUi-handle {
+    border-color: black !important;
 }
-#slider .noUi-active {
-    background: red;
+.noUi-handle:hover {
+    border-color: black !important;
+    cursor: pointer !important;
+}
+.noUi-active {
+    background: red !important;
+}
+.noUi-handle {
+    width: 14px !important;
+    right: -8px !important;
+}
+.noUi-handle:before, .noUi-handle:after {
+    left: 7px !important;
+    background: #00000000 !important;
 }
 
 input::-webkit-outer-spin-button,

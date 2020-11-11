@@ -49,7 +49,21 @@
                     <label class="c-text__label" for="text-duration">DURATION</label>
                     <input class="c-text__input" id="text-duration" type="number" placeholder="SS.ss"></input>
                 </div>
-                <button class="c-button" onclick="clipboard()">Copy to Clipboard</button>
+                <div class="c-text-bar">
+                    <button class="c-button c-button--replay" id="button-replay">
+                        <i class="material-icons">replay</i>
+                        REPLAY
+                    </button>
+                    <div class="c-volume-bar">
+                        <button class="c-button c-button--volume" id="button-volume">
+                            <i class="material-icons">volume_down</i>
+                        </button>
+                        <div class="c-slider" id="slider-volume"></div>
+                    </div>
+                    
+                    <!--<input class="c-text__input" id="text-duration" type="number" placeholder="SS.ss"></input>-->
+                </div>
+                <button class="c-button" id="button-clipboard">Copy to Clipboard</button>
             </div>
         </div>
         <div class="l-window__right">
@@ -63,16 +77,16 @@
             <div class="c-video">
                 <div id="player"></div>
             </div>
-
-            <div class="c-slider" id="slider"></div>
+            <div class="c-slider c-slider--time" id="slider"></div>
         </div>
     </div>
 </body>
 
 <script>
-    // Global variables
+    // Global variables 
     var searchInfo = [null, null];
     var slider = document.getElementById('slider');
+    var sliderVolume = document.getElementById('slider-volume');
     var textSearch = $("#text-search");
     var buttonSearch = $("#button-search");
     var textStart = $("#text-start");
@@ -89,6 +103,7 @@
         player = new YT.Player('player', {
         });
     }
+
     noUiSlider.create(slider, {
         start: [0, 10],
         behaviour: 'drag',
@@ -96,6 +111,14 @@
         range: {
             'min': 0,
             'max': 100
+        }
+    });
+    noUiSlider.create(sliderVolume, {
+        start: 1,
+        connect: [true, false],
+        range: {
+            'min': 0,
+            'max': 2
         }
     });
 
@@ -122,23 +145,23 @@
         });
         $("#button-search").click(function() {
             searchInfo = urlParser(textSearch.val());
-            reloadVideo(0, 10);
+            reloadVideo();
             reloadSliderMinMax();
         });
         $("#text-start").keyup(function(event) {
             if (event.keyCode === 13) {
                 var start = timeToSeconds(textStart.val());
                 var end = slider.noUiSlider.get()[1];
-                reloadVideo(start, end);
                 reloadSliderStartEnd(start, end);
+                reloadVideo();
             }
         });
         $("#text-end").keyup(function(event) {
             if (event.keyCode === 13) {
                 var start = slider.noUiSlider.get()[0];
                 var end = timeToSeconds(textEnd.val());
-                reloadVideo(start, end);
                 reloadSliderStartEnd(start, end);
+                reloadVideo();
             }
         });
         $("#text-duration").keyup(function(event) {
@@ -146,13 +169,32 @@
                 var start = slider.noUiSlider.get()[0];
                 var duration = textDuration.val();
                 var end = +start + +duration;
-                reloadVideo(start, end);
                 reloadSliderStartEnd(start, end);
+                reloadVideo();
             }
+        });
+        $("#button-replay").click(function() {
+            reloadVideo();
+        });
+        $("#button-volume").click(function() {
+            sliderVolume.noUiSlider.set(1.0);
+            setVolume();
+        });
+        $("#button-clipboard").click(function() {
+            var id = searchInfo[0];
+            var start = slider.noUiSlider.get()[0];
+            var duration = textDuration.val();
+            var volume = sliderVolume.noUiSlider.get();
+            var command = "?intro https://youtube.com/watch?v=" + id + "?t=" + start + " " + duration + " " + volume;
+            navigator.clipboard.writeText(command);
+            alert("COPIED. \nPaste and enter into a text channel. ");
         });
     });
 
     /*Set slider listeners*/
+    sliderVolume.noUiSlider.on('update', function() {
+        setVolume();
+    });
     slider.noUiSlider.on('update', function() {
         // if invalid video id
         if (searchInfo[0] == null) {
@@ -175,7 +217,8 @@
     });
 
     /*Reload video and slider*/
-    function reloadVideo(start, end) {
+    function reloadVideo() {
+        var [start, end] = slider.noUiSlider.get();
         player.loadVideoById({
                 'videoId': searchInfo[0],
                 'startSeconds': start,
@@ -228,17 +271,10 @@
 
         return total.toFixed(2);
     }
-
-    // Copy to clipboard
-    function clipboard() {
-        var id = searchInfo[0];
-        var start = slider.noUiSlider.get()[0];
-        var duration = textDuration.val();
-        var command = "?intro https://youtube.com/watch?v=" + id + "?t=" + start + " " + duration;
-        navigator.clipboard.writeText(command);
-        alert("COPIED. \nPaste and enter into a text channel. ");
-    }
    
+   function setVolume() {
+       console.log(sliderVolume.noUiSlider.get());
+   }
 </script>
 
 </html>
