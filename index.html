@@ -92,6 +92,7 @@
     var textStart = $("#text-start");
     var textEnd = $("#text-end");
     var textDuration = $("#text-duration");
+    var defaultVolume = 50;
     
     /*Initialize embed YT and slider*/
     var tag = document.createElement('script');
@@ -114,11 +115,11 @@
         }
     });
     noUiSlider.create(sliderVolume, {
-        start: 1,
+        start: defaultVolume,
         connect: [true, false],
         range: {
             'min': 0,
-            'max': 2
+            'max': 100
         }
     });
 
@@ -145,8 +146,10 @@
         });
         $("#button-search").click(function() {
             searchInfo = urlParser(textSearch.val());
+            reloadSliderStartEnd(0, 10);
             reloadVideo();
             reloadSliderMinMax();
+            player.setVolume(sliderVolume.noUiSlider.get());
         });
         $("#text-start").keyup(function(event) {
             if (event.keyCode === 13) {
@@ -177,8 +180,12 @@
             reloadVideo();
         });
         $("#button-volume").click(function() {
-            sliderVolume.noUiSlider.set(1.0);
-            setVolume();
+            
+            if (sliderVolume.noUiSlider.get() > 0) {
+                sliderVolume.noUiSlider.set(0);
+            } else {
+                sliderVolume.noUiSlider.set(defaultVolume);
+            }
         });
         $("#button-clipboard").click(function() {
             var id = searchInfo[0];
@@ -192,8 +199,8 @@
     });
 
     /*Set slider listeners*/
-    sliderVolume.noUiSlider.on('update', function() {
-        setVolume();
+    sliderVolume.noUiSlider.on('end', function() {
+        defaultVolume = sliderVolume.noUiSlider.get();
     });
     slider.noUiSlider.on('update', function() {
         // if invalid video id
@@ -215,6 +222,9 @@
         var [start,end] = slider.noUiSlider.get();
         reloadVideo(start, end);
     });
+    sliderVolume.noUiSlider.on('update', function() {
+        player.setVolume(sliderVolume.noUiSlider.get());
+    });
 
     /*Reload video and slider*/
     function reloadVideo() {
@@ -226,13 +236,10 @@
         });
     }
     function reloadSliderStartEnd(start, end) {
-        slider.noUiSlider.updateOptions({
-            start: [start, end]
-        });
+        slider.noUiSlider.set([start, end]);
     }
     function reloadSliderMinMax() {
         var min = 0;
-
         if (player.getPlayerState() == 1) {
             var max = player.getDuration();
             slider.noUiSlider.updateOptions({
@@ -271,10 +278,6 @@
 
         return total.toFixed(2);
     }
-   
-   function setVolume() {
-       console.log(sliderVolume.noUiSlider.get());
-   }
 </script>
 
 </html>
