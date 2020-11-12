@@ -27,8 +27,10 @@
                 <div class="c-content__title">SiggyBot</div>
                 <div class="c-content__description">SiggyBot is a Discord bot that will play a custom audio signature when you join a voice channel.</div>
                 <ul class="c-content__ul">
-                    <li>Use any YouTube audio</li>
-                    <li>Customize start and end time with 0.01s precision</li>
+                    <li>Enter any YouTube audio</li>
+                    <li>Enter start and end time with 0.01s precision or interact with the slider</li>
+                    <li>Increase/decrease volume output</li>
+                    <li>Copy to clipboard and paste into discord</li>
                     <!--<li>Customize start and end fade times</li>-->
                 </ul>
                 <a href="https://discord.com/oauth2/authorize?client_id=657028082468782101&scope=bot&permissions=3165184" target="_blank">
@@ -38,42 +40,40 @@
             </div>
             <div class="c-content c-content--bottom">
                 <div class="c-text-bar">
+                    <input class="c-text__input" id="text-search" placeholder="Insert YouTube URL here"></input>
+                    <button class="c-button c-button--text" id="button-search">
+                        <i class="material-icons">search</i>
+                        SEARCH
+                    </button>
+                </div>
+                <div class="c-text-bar--alt">
                     <label class="c-text__label" for="text-start">START</label>
                     <input class="c-text__input" id="text-start" placeholder="HH:MM:SS.ss"></input>
                 </div>
-                <div class="c-text-bar">
+                <div class="c-text-bar--alt">
                     <label class="c-text__label" for="text-end">END</label>
                     <input class="c-text__input" id="text-end" placeholder="HH:MM:SS.ss"></input>
                 </div>
-                <div class="c-text-bar">
+                <div class="c-text-bar--alt">
                     <label class="c-text__label" for="text-duration">DURATION</label>
                     <input class="c-text__input" id="text-duration" type="number" placeholder="SS.ss"></input>
                 </div>
                 <div class="c-text-bar">
-                    <button class="c-button c-button--replay" id="button-replay">
-                        <i class="material-icons">replay</i>
-                        REPLAY
-                    </button>
                     <div class="c-volume-bar">
                         <button class="c-button c-button--volume" id="button-volume">
                             <i class="material-icons" id="icon-volume">volume_down</i>
                         </button>
                         <div class="c-slider" id="slider-volume"></div>
                     </div>
-                    
-                    <!--<input class="c-text__input" id="text-duration" type="number" placeholder="SS.ss"></input>-->
+                    <button class="c-button c-button--text" id="button-replay">
+                        <i class="material-icons">replay</i>
+                        REPLAY
+                    </button>
                 </div>
                 <button class="c-button" id="button-clipboard">Copy to Clipboard</button>
             </div>
         </div>
         <div class="l-window__right">
-            <div class="c-search">
-                <input class="c-text__input c-text__input--search" id="text-search" placeholder="Insert YouTube URL here"></input>
-                <button class="c-button c-button--search" id="button-search">
-                    <i class="material-icons">search</i>
-                </button>
-            </div>
-
             <div class="c-video">
                 <div id="player"></div>
             </div>
