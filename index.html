@@ -56,7 +56,7 @@
                     </button>
                     <div class="c-volume-bar">
                         <button class="c-button c-button--volume" id="button-volume">
-                            <i class="material-icons">volume_down</i>
+                            <i class="material-icons" id="icon-volume">volume_down</i>
                         </button>
                         <div class="c-slider" id="slider-volume"></div>
                     </div>
@@ -83,7 +83,8 @@
 </body>
 
 <script>
-    // Global variables 
+    /*Global Variables*/
+    // Document elements
     var searchInfo = [null, null];
     var slider = document.getElementById('slider');
     var sliderVolume = document.getElementById('slider-volume');
@@ -92,7 +93,15 @@
     var textStart = $("#text-start");
     var textEnd = $("#text-end");
     var textDuration = $("#text-duration");
+    var iconVolume = $("#icon-volume");
+
+    // Video variables
+    var start;
+    var end;
+
+    // Volume variables
     var defaultVolume = 50;
+    var currentVolume = defaultVolume;
     
     /*Initialize embed YT and slider*/
     var tag = document.createElement('script');
@@ -116,6 +125,7 @@
     });
     noUiSlider.create(sliderVolume, {
         start: defaultVolume,
+        step: 1,
         connect: [true, false],
         range: {
             'min': 0,
@@ -146,32 +156,37 @@
         });
         $("#button-search").click(function() {
             searchInfo = urlParser(textSearch.val());
-            reloadSliderStartEnd(0, 10);
+            if (searchInfo[1] == undefined) {
+                start = 0;
+            } else {
+                start = searchInfo[1];
+            }
+            end = +start + 10;
+            reloadSliderStartEnd(start, end);
             reloadVideo();
             reloadSliderMinMax();
-            player.setVolume(sliderVolume.noUiSlider.get());
         });
         $("#text-start").keyup(function(event) {
             if (event.keyCode === 13) {
-                var start = timeToSeconds(textStart.val());
-                var end = slider.noUiSlider.get()[1];
+                start = timeToSeconds(textStart.val());
+                end = slider.noUiSlider.get()[1];
                 reloadSliderStartEnd(start, end);
                 reloadVideo();
             }
         });
         $("#text-end").keyup(function(event) {
             if (event.keyCode === 13) {
-                var start = slider.noUiSlider.get()[0];
-                var end = timeToSeconds(textEnd.val());
+                start = slider.noUiSlider.get()[0];
+                end = timeToSeconds(textEnd.val());
                 reloadSliderStartEnd(start, end);
                 reloadVideo();
             }
         });
         $("#text-duration").keyup(function(event) {
             if (event.keyCode === 13) {
-                var start = slider.noUiSlider.get()[0];
+                start = slider.noUiSlider.get()[0];
                 var duration = textDuration.val();
-                var end = +start + +duration;
+                end = +start + +duration;
                 reloadSliderStartEnd(start, end);
                 reloadVideo();
             }
@@ -180,27 +195,26 @@
             reloadVideo();
         });
         $("#button-volume").click(function() {
-            
-            if (sliderVolume.noUiSlider.get() > 0) {
+            if (currentVolume > 0) {
                 sliderVolume.noUiSlider.set(0);
             } else {
                 sliderVolume.noUiSlider.set(defaultVolume);
             }
         });
         $("#button-clipboard").click(function() {
-            var id = searchInfo[0];
-            var start = slider.noUiSlider.get()[0];
-            var duration = textDuration.val();
-            var volume = sliderVolume.noUiSlider.get() / 100;
-            var command = "?intro https://youtube.com/watch?v=" + id + "?t=" + start + " " + duration + " " + volume;
+            var _id = searchInfo[0];
+            var _start = slider.noUiSlider.get()[0];
+            var _duration = textDuration.val();
+            var _volume = currentVolume / 100;
+            var command = "?intro https://youtube.com/watch?v=" + _id + "?t=" + _start + " " + _duration + " " + _volume;
             navigator.clipboard.writeText(command);
             alert("COPIED. \nPaste and enter into a text channel. ");
         });
     });
 
     /*Set slider listeners*/
-    sliderVolume.noUiSlider.on('end', function() {
-        defaultVolume = sliderVolume.noUiSlider.get();
+    sliderVolume.noUiSlider.on('change', function() {
+        defaultVolume = currentVolume;
     });
     slider.noUiSlider.on('update', function() {
         // if invalid video id
@@ -223,7 +237,16 @@
         reloadVideo(start, end);
     });
     sliderVolume.noUiSlider.on('update', function() {
-        player.setVolume(sliderVolume.noUiSlider.get());
+        currentVolume = sliderVolume.noUiSlider.get();
+        if (currentVolume == 0) {
+            iconVolume.text("volume_off");
+        }
+        else if (currentVolume > 0 && currentVolume < 51) {
+            iconVolume.text("volume_down");
+        } else {
+            iconVolume.text("volume_up");
+        }
+        player.setVolume(currentVolume);
     });
 
     /*Reload video and slider*/
@@ -234,6 +257,8 @@
                 'startSeconds': start,
                 'endSeconds': end
         });
+
+        player.setVolume(currentVolume);
     }
     function reloadSliderStartEnd(start, end) {
         slider.noUiSlider.set([start, end]);
@@ -243,7 +268,7 @@
         if (player.getPlayerState() == 1) {
             var max = player.getDuration();
             slider.noUiSlider.updateOptions({
-                start: [0, 10],
+                start: [start, end],
                 range: {
                     'min': min,
                     'max': max
