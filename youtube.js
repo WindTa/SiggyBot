@@ -50,7 +50,7 @@ function mp3Cutter(ytid, id, startSeconds, durationSeconds, volumeChange, channe
                 return console.log(err);
             }
             var url = result.split("\n")[1];
-            var command = 'ffmpeg -i "' +url+ '" -filter:a "volume=' +  volumeChange + '" -ss ' + startFormat + ' -to ' + endFormat + ' intro/' + id + '.mp3';
+            var command = 'ffmpeg -i "' +url+ '" -filter:a "loudnorm, volume=' +  volumeChange + '" -ss ' + startFormat + ' -to ' + endFormat + ' intro/' + id + '.mp3';
             console.log(command);
             const child2 = exec(command, function(err, result) {
                 if (err) {
