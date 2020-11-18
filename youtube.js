@@ -39,7 +39,7 @@ function mp3Cutter(ytid, id, startSeconds, durationSeconds, volumeChange, channe
     if (volumeChange == 0) {
 	volumeChange = 0.5;
     }
-    volumeChange * 5;
+    volumeChange = volumeChange * 5;
 
     startFormat = new Date(startSeconds*1000).toISOString().substr(15, 8);
     endFormat = new Date((startSeconds + durationSeconds)*1000).toISOString().substr(15, 8);
